@@ -8,7 +8,10 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  adminLogin: (identifier: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (name: string, email: string, password: string, preferred_language?: string) => Promise<{ success: boolean; error?: string }>;
+  forgotPassword: (email: string) => Promise<{ success: boolean; message?: string; resetToken?: string; error?: string }>;
+  resetPassword: (email: string, token: string, newPassword: string) => Promise<{ success: boolean; message?: string; error?: string }>;
   logout: () => void;
   updateProfile: (data: { name?: string; preferred_language?: string }) => Promise<{ success: boolean; error?: string }>;
 }
@@ -158,6 +161,69 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const adminLogin = async (identifier: string, password: string) => {
+    try {
+      const res = await fetch('/api/auth/admin-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Admin authentication failed' };
+      }
+
+      localStorage.setItem('dealnest_token', data.token);
+      setToken(data.token);
+      setUser(data.user);
+
+      if (data.user.preferred_language) {
+        setLanguage(data.user.preferred_language, false);
+      }
+
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: 'Network error during admin login' };
+    }
+  };
+
+  const forgotPassword = async (email: string) => {
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Failed to process request' };
+      }
+      return { success: true, message: data.message, resetToken: data.resetToken };
+    } catch (err) {
+      return { success: false, error: 'Network error requesting password reset' };
+    }
+  };
+
+  const resetPassword = async (email: string, resetToken: string, newPassword: string) => {
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, token: resetToken, newPassword }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Failed to reset password' };
+      }
+      return { success: true, message: data.message };
+    } catch (err) {
+      return { success: false, error: 'Network error resetting password' };
+    }
+  };
+
   const isAdmin = user?.role === 'admin';
 
   return (
@@ -168,7 +234,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         loading,
         isAdmin,
         login,
+        adminLogin,
         register,
+        forgotPassword,
+        resetPassword,
         logout,
         updateProfile,
       }}

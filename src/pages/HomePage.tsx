@@ -155,13 +155,7 @@ export const HomePage: React.FC = () => {
             </Link>
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
+          <div className="deals-grid">
             {featuredDeals.map((deal) => (
               <ProductCard
                 key={deal.id}
@@ -204,13 +198,7 @@ export const HomePage: React.FC = () => {
             </Link>
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
+          <div className="deals-grid">
             {trendingDeals.map((deal) => (
               <ProductCard
                 key={deal.id}
@@ -338,13 +326,7 @@ export const HomePage: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-                  gap: '1.5rem',
-                }}
-              >
+              <div className="deals-grid">
                 {allDeals.map((deal) => (
                   <ProductCard
                     key={deal.id}

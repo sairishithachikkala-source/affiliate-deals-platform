@@ -128,13 +128,7 @@ export const WishlistPage: React.FC = () => {
         </div>
       ) : (
         <div>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
+          <div className="deals-grid">
             {displayedDeals.map((deal) => (
               <ProductCard
                 key={deal.id}

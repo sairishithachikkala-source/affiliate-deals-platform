@@ -36,6 +36,41 @@ router.get('/', (req, res) => {
   }
 });
 
+// Get all retailers (must be defined before /:slug)
+router.get('/retailers/list', (req, res) => {
+  try {
+    const retailers = db.prepare(`
+      SELECT 
+        r.*,
+        (SELECT COUNT(*) FROM deals d WHERE d.retailer_id = r.id AND d.is_active = 1) as deals_count
+      FROM retailers r
+      WHERE r.is_active = 1
+      ORDER BY deals_count DESC, r.name ASC
+    `).all();
+
+    res.json({ retailers });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch retailers' });
+  }
+});
+
+router.get('/retailers', (req, res) => {
+  try {
+    const retailers = db.prepare(`
+      SELECT 
+        r.*,
+        (SELECT COUNT(*) FROM deals d WHERE d.retailer_id = r.id AND d.is_active = 1) as deals_count
+      FROM retailers r
+      WHERE r.is_active = 1
+      ORDER BY deals_count DESC, r.name ASC
+    `).all();
+
+    res.json({ retailers });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch retailers' });
+  }
+});
+
 // Get single category by slug with its subcategories and deals count
 router.get('/:slug', (req, res) => {
   try {
@@ -107,42 +142,6 @@ router.get('/:categorySlug/:subcategorySlug', (req, res) => {
   } catch (err) {
     console.error('Error fetching subcategory:', err);
     res.status(500).json({ error: 'Failed to fetch subcategory details' });
-  }
-});
-
-// Get all retailers
-router.get('/retailers/list', (req, res) => {
-  try {
-    const retailers = db.prepare(`
-      SELECT 
-        r.*,
-        (SELECT COUNT(*) FROM deals d WHERE d.retailer_id = r.id AND d.is_active = 1) as deals_count
-      FROM retailers r
-      WHERE r.is_active = 1
-      ORDER BY deals_count DESC, r.name ASC
-    `).all();
-
-    res.json({ retailers });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch retailers' });
-  }
-});
-
-// Backward-compatible alias for /retailers
-router.get('/retailers', (req, res) => {
-  try {
-    const retailers = db.prepare(`
-      SELECT 
-        r.*,
-        (SELECT COUNT(*) FROM deals d WHERE d.retailer_id = r.id AND d.is_active = 1) as deals_count
-      FROM retailers r
-      WHERE r.is_active = 1
-      ORDER BY deals_count DESC, r.name ASC
-    `).all();
-
-    res.json({ retailers });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch retailers' });
   }
 });
 

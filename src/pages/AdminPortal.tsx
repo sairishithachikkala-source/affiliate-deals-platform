@@ -76,10 +76,10 @@ export const AdminPortal: React.FC = () => {
   const [newSubcatDesc, setNewSubcatDesc] = useState('');
   const [newSubcatIcon, setNewSubcatIcon] = useState('Package');
 
-  // Protection check
+  // Protection check - strictly requires administrator role
   useEffect(() => {
     if (!token || !isAdmin) {
-      navigate('/login', { state: { from: { pathname: '/admin' } } });
+      navigate('/admin/login', { replace: true });
     }
   }, [token, isAdmin, navigate]);
 

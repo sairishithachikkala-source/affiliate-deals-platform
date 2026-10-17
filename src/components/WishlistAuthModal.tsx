@@ -50,7 +50,7 @@ export const WishlistAuthModal: React.FC<WishlistAuthModalProps> = ({ isOpen, on
         style={{
           backgroundColor: '#ffffff',
           borderRadius: '24px',
-          padding: '2.25rem 2rem',
+          padding: 'clamp(1.5rem, 5vw, 2.25rem) clamp(1rem, 4vw, 2rem)',
           maxWidth: '440px',
           width: '100%',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',

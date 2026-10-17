@@ -183,7 +183,7 @@ async function runTests() {
     });
     assert(removeRes.status === 200 && removeRes.body.success, 'Logged-in user can remove product from wishlist');
 
-    // 6. Multilingual Parity Check (All 8 languages have 207 keys)
+    // 6. Multilingual Parity Check (All 8 languages have 228 keys)
     const fs = require('fs');
     const path = require('path');
     const languages = ['en', 'te', 'hi', 'ta', 'ml', 'kn', 'mr', 'bn'];
@@ -191,12 +191,12 @@ async function runTests() {
     for (const lang of languages) {
       const p = path.join(__dirname, `../src/i18n/translations/${lang}.json`);
       const data = JSON.parse(fs.readFileSync(p, 'utf8'));
-      if (Object.keys(data).length !== 207 || !data.wishlist_login_prompt || !data.explore_label) {
+      if (Object.keys(data).length !== 228 || !data.wishlist_login_prompt || !data.explore_label || !data.nav_admin_portal) {
         allLangsPass = false;
-        console.error(`Language ${lang} failed check!`);
+        console.error(`Language ${lang} failed check! Key count: ${Object.keys(data).length}`);
       }
     }
-    assert(allLangsPass, 'All 8 languages have 100% key parity (207 keys each, including wishlist_login_prompt and explore_label)');
+    assert(allLangsPass, 'All 8 languages have 100% key parity (228 keys each, including wishlist_login_prompt, explore_label, and nav_admin_portal)');
 
     // 7. Verify all deals remain intact with prices and affiliate tags
     const allDealsRes = await request({

@@ -130,6 +130,72 @@ async function runTests() {
     });
     await assert('Non-admin user forbidden from admin endpoints (HTTP 403)', forbiddenRes.status === 403);
 
+    // 15. Admin login with identifier "Sai Krishna Chikkala"
+    const saiAdminRes = await fetch(`${BASE_URL}/api/auth/admin-login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier: 'Sai Krishna Chikkala', password: 'Admin@DealNest2026' })
+    });
+    const saiAuth = await saiAdminRes.json();
+    await assert('Admin login with identifier "Sai Krishna Chikkala" succeeds with admin role', saiAdminRes.ok && saiAuth.user.role === 'admin' && Boolean(saiAuth.token));
+
+    // 16. Admin login with invalid credentials fails
+    const invalidAdminRes = await fetch(`${BASE_URL}/api/auth/admin-login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier: 'Sai Krishna Chikkala', password: 'WrongPassword' })
+    });
+    await assert('Admin login with wrong password fails with HTTP 401', invalidAdminRes.status === 401);
+
+    // 17. Ordinary user prevented from registering with admin name/email
+    const hijackRes = await fetch(`${BASE_URL}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Sai Krishna Chikkala', email: 'admin@dealnest.in', password: 'SecretPassword123' })
+    });
+    await assert('Ordinary registration with admin credentials is forbidden (HTTP 403)', hijackRes.status === 403);
+
+    // 18. User registration with website-specific password
+    const testEmail = `shopper_${Date.now()}@example.com`;
+    const regRes = await fetch(`${BASE_URL}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Rohit Verma', email: testEmail, password: 'RohitWebsitePassword2026', preferred_language: 'te' })
+    });
+    const regData = await regRes.json();
+    await assert('User registration with website password succeeds with user role', regRes.status === 201 && regData.user.role === 'user' && Boolean(regData.token));
+
+    // 19. Wishlist Privacy: New user has isolated private wishlist
+    const newWishRes = await fetch(`${BASE_URL}/api/wishlist`, {
+      headers: { Authorization: `Bearer ${regData.token}` }
+    });
+    const newWishData = await newWishRes.json();
+    await assert('New user wishlist is completely private (0 items from other users)', newWishRes.ok && newWishData.wishlist.length === 0);
+
+    // 20. Forgot Password & Reset Password Flow
+    const forgotRes = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: testEmail })
+    });
+    const forgotData = await forgotRes.json();
+    await assert('Forgot password generates secure reset token', forgotRes.ok && Boolean(forgotData.resetToken));
+
+    const resetRes = await fetch(`${BASE_URL}/api/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: testEmail, token: forgotData.resetToken, newPassword: 'BrandNewPassword2026' })
+    });
+    await assert('Reset password updates user password successfully', resetRes.ok);
+
+    // Login with new password
+    const newLoginRes = await fetch(`${BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: testEmail, password: 'BrandNewPassword2026' })
+    });
+    await assert('Login with new reset password succeeds', newLoginRes.ok);
+
     console.log(`\n================================`);
     console.log(`Results: ${passed} Passed, ${failed} Failed`);
     console.log(`================================`);

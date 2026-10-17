@@ -34,6 +34,14 @@ export function initDatabase() {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
+    CREATE TABLE IF NOT EXISTS password_resets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL,
+      token TEXT NOT NULL,
+      expires_at DATETIME NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
     CREATE TABLE IF NOT EXISTS categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       slug TEXT UNIQUE NOT NULL,
@@ -628,15 +636,34 @@ function seedInitialData() {
     insertRet.run('Croma', 'croma', 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=100&auto=format&fit=crop&q=80', 'https://www.croma.com', 'cromadealnest', '#00E88F');
   }
 
-  // Seed Admin and Demo User
-  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
-  if (userCount === 0) {
-    console.log('Seeding initial admin and demo user...');
-    const hash = bcrypt.hashSync('Admin@DealNest2026', 10);
+  // Configure Admin and Demo User from Environment
+  const adminIdentifier = process.env.ADMIN_IDENTIFIER || 'Sai Krishna Chikkala';
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@dealnest.in';
+
+  if (adminPassword) {
+    const adminHash = bcrypt.hashSync(adminPassword, 10);
+    const existingAdmin = db.prepare('SELECT id FROM users WHERE role = ? OR email = ?').get('admin', adminEmail);
+    if (!existingAdmin) {
+      db.prepare(`
+        INSERT INTO users (name, email, password_hash, role, preferred_language)
+        VALUES (?, ?, ?, 'admin', 'en')
+      `).run(adminIdentifier, adminEmail, adminHash);
+    } else {
+      db.prepare(`
+        UPDATE users SET name = ?, email = ?, password_hash = ? WHERE id = ?
+      `).run(adminIdentifier, adminEmail, adminHash, existingAdmin.id);
+    }
+  }
+
+  // Ensure demo user exists for tests if not already present
+  const demoUser = db.prepare('SELECT id FROM users WHERE email = ?').get('priya@example.com');
+  if (!demoUser) {
     const demoHash = bcrypt.hashSync('User@DealNest2026', 10);
-    const insertUser = db.prepare('INSERT INTO users (name, email, password_hash, role, preferred_language) VALUES (?, ?, ?, ?, ?)');
-    insertUser.run('DealNest Administrator', 'admin@dealnest.in', hash, 'admin', 'en');
-    insertUser.run('Priya Sharma', 'priya@example.com', demoHash, 'user', 'hi');
+    db.prepare(`
+      INSERT INTO users (name, email, password_hash, role, preferred_language)
+      VALUES (?, ?, ?, 'user', 'hi')
+    `).run('Priya Sharma', 'priya@example.com', demoHash);
   }
 
   // Seed / Map Deals with All 8 Languages

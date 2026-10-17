@@ -13,7 +13,10 @@ export interface Category {
   name_key: string;
   default_name: string;
   icon?: string;
+  description?: string;
+  image_url?: string;
   order_index: number;
+  is_active?: number | boolean;
   deals_count?: number;
   subcategories?: Subcategory[];
 }
@@ -24,7 +27,11 @@ export interface Subcategory {
   slug: string;
   name_key: string;
   default_name: string;
+  description?: string;
+  image_url?: string;
+  icon?: string;
   order_index: number;
+  is_active?: number | boolean;
   deals_count?: number;
 }
 

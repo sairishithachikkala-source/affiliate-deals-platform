@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { UserPlus, User, Mail, Key, Globe, AlertCircle } from 'lucide-react';
+import { UserPlus, User, Mail, Key, Globe, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useLanguage, SUPPORTED_LANGUAGES } from '../i18n/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -13,6 +13,7 @@ export const RegisterPage: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [selectedLang, setSelectedLang] = useState(currentLanguage);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -151,13 +152,13 @@ export const RegisterPage: React.FC = () => {
 
           {/* Password */}
           <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: '0.35rem' }}>
+            <label htmlFor="register-password-input" style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: '0.35rem' }}>
               {t('auth_password')}
             </label>
             <div style={{ position: 'relative' }}>
               <Key size={18} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 id="register-password-input"
                 required
                 value={password}
@@ -165,13 +166,30 @@ export const RegisterPage: React.FC = () => {
                 placeholder="At least 6 characters"
                 style={{
                   width: '100%',
-                  padding: '0.65rem 1rem 0.65rem 2.6rem',
+                  padding: '0.65rem 2.6rem 0.65rem 2.6rem',
                   borderRadius: '10px',
                   border: '1px solid #cbd5e1',
                   fontSize: '0.9rem',
                 }}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '0.85rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#94a3b8',
+                }}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
+            <p style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '0.35rem' }}>
+              {t('auth_website_password_notice')}
+            </p>
           </div>
 
           {/* Preferred Language */}

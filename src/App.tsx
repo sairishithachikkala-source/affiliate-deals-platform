@@ -14,6 +14,7 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { AdminPortal } from './pages/AdminPortal';
+import { AdminLoginPage } from './pages/AdminLoginPage';
 import { AffiliateDisclosurePage } from './pages/AffiliateDisclosurePage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { TermsPage } from './pages/TermsPage';
@@ -36,6 +37,7 @@ const AppContent: React.FC = () => {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/admin" element={<AdminPortal />} />
+          <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route path="/affiliate-disclosure" element={<AffiliateDisclosurePage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/terms" element={<TermsPage />} />

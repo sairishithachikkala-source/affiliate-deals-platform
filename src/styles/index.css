@@ -58,6 +58,12 @@
   padding: 0;
 }
 
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+  position: relative;
+}
+
 body {
   font-family: var(--font-inter);
   background-color: var(--bg-main);
@@ -70,10 +76,17 @@ body {
   flex-direction: column;
 }
 
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
 #root {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* Typography styles */
@@ -321,12 +334,33 @@ input, select, textarea {
   }
 }
 
+@media (max-width: 380px) {
+  .container {
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+  }
+}
+
+/* Reusable responsive deals grid */
+.deals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
+  gap: 1.5rem;
+}
+
+@media (max-width: 600px) {
+  .deals-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+}
+
 /* ==========================================================================
    Subcategory Interactive Image Cards (Requirement 1)
    ========================================================================== */
 .subcat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
   gap: 1.5rem;
   margin-top: 1.5rem;
 }
@@ -334,6 +368,13 @@ input, select, textarea {
 @media (max-width: 640px) {
   .subcat-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .subcat-grid {
+    grid-template-columns: 1fr !important;
     gap: 0.75rem;
   }
 }
