@@ -71,17 +71,51 @@ router.get('/retailers', (req, res) => {
   }
 });
 
+// Normalization helper for category slugs to support original/alternate aliases (e.g., other -> others, electronics -> electronics-tech)
+export function normalizeCategorySlug(slug) {
+  if (!slug) return slug;
+  const s = String(slug).toLowerCase().trim();
+  if (s === 'other' || s === 'others' || s === 'lifestyle') return 'others';
+  if (s === 'electronics' || s === 'electronics-tech' || s === 'tech') return 'electronics-tech';
+  if (s === 'fashion' || s === 'fashion-accessories') return 'fashion-accessories';
+  if (s === 'beauty' || s === 'beauty-personal-care') return 'beauty-personal-care';
+  if (s === 'home' || s === 'kitchen' || s === 'home-kitchen') return 'home-kitchen';
+  return slug;
+}
+
+export const SUBCATEGORY_SLUG_ALIASES = {
+  'mens-clothing': 'mens-fashion',
+  'womens-ethnic': 'womens-fashion',
+  'laptops-audio': 'audio-headphones',
+  'smartwatches': 'smartwatches-wearables',
+  'fragrances': 'grooming',
+  'appliances': 'kitchen-storage-organization',
+  'cookware': 'cookware-bakeware',
+  'water-purifiers': 'kitchen-utensils-tools',
+  'books': 'books-stationery',
+  'stationery': 'books-stationery',
+  'other-useful': 'other-useful-products',
+};
+
+export function normalizeSubcategorySlug(slug) {
+  if (!slug) return slug;
+  const s = String(slug).toLowerCase().trim();
+  return SUBCATEGORY_SLUG_ALIASES[s] || s;
+}
+
 // Get single category by slug with its subcategories and deals count
 router.get('/:slug', (req, res) => {
   try {
     const { slug } = req.params;
+    const targetSlug = normalizeCategorySlug(slug);
+
     const category = db.prepare(`
       SELECT 
         c.*,
         (SELECT COUNT(*) FROM deals d WHERE d.category_id = c.id AND d.is_active = 1) as deals_count
       FROM categories c
-      WHERE c.slug = ? AND c.is_active = 1
-    `).get(slug);
+      WHERE (c.slug = ? OR c.slug = ?) AND c.is_active = 1
+    `).get(targetSlug, slug);
 
     if (!category) {
       return res.status(404).json({ error: 'Category not found' });
@@ -112,12 +146,14 @@ router.get('/:slug', (req, res) => {
 router.get('/:categorySlug/:subcategorySlug', (req, res) => {
   try {
     const { categorySlug, subcategorySlug } = req.params;
+    const targetCatSlug = normalizeCategorySlug(categorySlug);
+    const targetSubSlug = normalizeSubcategorySlug(subcategorySlug);
 
     const category = db.prepare(`
       SELECT id, slug, name_key, default_name, icon, description, image_url
       FROM categories
-      WHERE slug = ? AND is_active = 1
-    `).get(categorySlug);
+      WHERE (slug = ? OR slug = ?) AND is_active = 1
+    `).get(targetCatSlug, categorySlug);
 
     if (!category) {
       return res.status(404).json({ error: 'Category not found' });
@@ -128,8 +164,8 @@ router.get('/:categorySlug/:subcategorySlug', (req, res) => {
         sc.*,
         (SELECT COUNT(*) FROM deals d WHERE d.subcategory_id = sc.id AND d.is_active = 1) as deals_count
       FROM subcategories sc
-      WHERE sc.category_id = ? AND sc.slug = ? AND sc.is_active = 1
-    `).get(category.id, subcategorySlug);
+      WHERE sc.category_id = ? AND (sc.slug = ? OR sc.slug = ?) AND sc.is_active = 1
+    `).get(category.id, targetSubSlug, subcategorySlug);
 
     if (!subcategory) {
       return res.status(404).json({ error: 'Subcategory not found' });

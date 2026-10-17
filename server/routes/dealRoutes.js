@@ -1,6 +1,7 @@
 import express from 'express';
 import db from '../db.js';
 import { optionalToken } from '../auth.js';
+import { normalizeCategorySlug, normalizeSubcategorySlug } from './categoryRoutes.js';
 
 const router = express.Router();
 
@@ -49,13 +50,15 @@ router.get('/', optionalToken, (req, res) => {
     const params = [lang];
 
     if (category) {
-      query += ` AND (c.slug = ? OR c.id = ?)`;
-      params.push(category, category);
+      const targetCatSlug = normalizeCategorySlug(category);
+      query += ` AND (c.slug = ? OR c.slug = ? OR c.id = ?)`;
+      params.push(targetCatSlug, category, category);
     }
 
     if (subcategory) {
-      query += ` AND (sc.slug = ? OR sc.id = ?)`;
-      params.push(subcategory, subcategory);
+      const targetSubSlug = normalizeSubcategorySlug(subcategory);
+      query += ` AND (sc.slug = ? OR sc.slug = ? OR sc.id = ?)`;
+      params.push(targetSubSlug, subcategory, subcategory);
     }
 
     if (retailer) {

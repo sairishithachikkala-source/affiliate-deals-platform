@@ -95,9 +95,9 @@ export const CategoryLandingPage: React.FC = () => {
       .finally(() => setLoading(false));
   }, [categorySlug, subcategorySlug]);
 
-  // 2. Fetch deals if a subcategory is selected
+  // 2. Fetch deals for category (or specific subcategory if selected)
   useEffect(() => {
-    if (!categorySlug || !subcategorySlug) {
+    if (!categorySlug) {
       setDeals([]);
       return;
     }
@@ -106,7 +106,9 @@ export const CategoryLandingPage: React.FC = () => {
     const params = new URLSearchParams();
     params.set('lang', currentLanguage);
     params.set('category', categorySlug);
-    params.set('subcategory', subcategorySlug);
+    if (subcategorySlug) {
+      params.set('subcategory', subcategorySlug);
+    }
     params.set('sort', currentSort);
     if (searchFilter.trim()) {
       params.set('search', searchFilter.trim());
@@ -430,6 +432,83 @@ export const CategoryLandingPage: React.FC = () => {
               );
             })}
           </div>
+
+          {/* Category Deals & Product Listings */}
+          <div style={{ marginTop: '3.5rem', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#0f172a' }}>
+                  {t('category_deals_title', { category: categoryTitle })}
+                </h2>
+                <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.2rem' }}>
+                  {t('category_deals_subtitle')}
+                </p>
+              </div>
+
+              {/* Quick Search inside this category */}
+              <div style={{ minWidth: '220px', maxWidth: '300px', width: '100%' }}>
+                <input
+                  type="text"
+                  placeholder={t('search_placeholder')}
+                  value={searchFilter}
+                  onChange={(e) => setSearchFilter(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem 0.85rem',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '0.85rem',
+                    backgroundColor: '#ffffff',
+                  }}
+                />
+              </div>
+            </div>
+
+            <SortBar
+              totalCount={deals.length}
+              currentSort={currentSort}
+              onSortChange={setCurrentSort}
+            />
+          </div>
+
+          {dealsLoading ? (
+            <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
+              <p>{t('loading_deals', { lang: t('current_language') })}</p>
+            </div>
+          ) : deals.length === 0 ? (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '3rem 1.5rem',
+                backgroundColor: '#ffffff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '16px',
+                maxWidth: '520px',
+                margin: '1.5rem auto',
+              }}
+            >
+              <ShoppingBag size={44} style={{ color: '#cbd5e1', margin: '0 auto 0.75rem' }} />
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem' }}>
+                {t('no_deals_found')}
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.25rem' }}>
+                {t('subcategory_empty_desc')}
+              </p>
+              <Link to="/deals" className="btn-primary" style={{ padding: '0.6rem 1.25rem' }}>
+                {t('explore_deals_btn')}
+              </Link>
+            </div>
+          ) : (
+            <div className="deals-grid">
+              {deals.map((deal) => (
+                <ProductCard
+                  key={deal.id}
+                  deal={deal}
+                  onOpenDetails={(d) => setActiveModalDeal(d)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 

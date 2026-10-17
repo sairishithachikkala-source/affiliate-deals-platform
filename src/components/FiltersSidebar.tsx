@@ -30,7 +30,15 @@ export const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
 }) => {
   const { t } = useLanguage();
 
-  const activeCategoryObj = categories.find((c) => c.slug === selectedCategory);
+  const activeCategoryObj = categories.find(
+    (c) =>
+      c.slug === selectedCategory ||
+      (c.slug === 'others' && (selectedCategory === 'other' || selectedCategory === 'lifestyle')) ||
+      (c.slug === 'electronics-tech' && selectedCategory === 'electronics') ||
+      (c.slug === 'fashion-accessories' && selectedCategory === 'fashion') ||
+      (c.slug === 'beauty-personal-care' && selectedCategory === 'beauty') ||
+      (c.slug === 'home-kitchen' && (selectedCategory === 'home' || selectedCategory === 'kitchen'))
+  );
   const subcategories = activeCategoryObj?.subcategories || [];
 
   const priceRanges = [
@@ -111,7 +119,7 @@ export const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
         </label>
         <select
           id="filter-category-select"
-          value={selectedCategory}
+          value={activeCategoryObj ? activeCategoryObj.slug : selectedCategory}
           onChange={(e) => {
             onFilterChange('category', e.target.value);
             onFilterChange('subcategory', ''); // reset subcategory on category change
